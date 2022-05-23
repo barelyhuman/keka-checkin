@@ -1,6 +1,6 @@
 # keka-checkin
 
-Simple pupeteer script to automate the process of checkin in/out of keka
+pupeteer based cli to simplify the process of checking in/out of keka
 
 **Note: This could be a binary but I'm too packed to do that right now, might do that later.**
 
