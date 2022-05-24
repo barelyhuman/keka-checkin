@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 
 import dotenv from 'dotenv'
-dotenv.config()
 
-import puppeteer from 'puppeteer'
-import prompts from 'prompts'
-import mri from 'mri'
+import {program} from 'commander'
 import ora from 'ora'
+import prompts from 'prompts'
+import puppeteer from 'puppeteer'
 
-const spinner = ora('Starting engines...').start()
+const spinner = ora('Starting engines...')
 
 const BUTTON_STATUS_MAP = {
 	CHECKED_IN: 'clock-out',
@@ -190,42 +189,37 @@ async function goBonkers(browser, opts) {
 	await kekaPage.waitForTimeout(3000)
 }
 
-function printHelp() {
-	console.log(`
-USAGE
------  
-  ./cli.js [flags]
-
-FLAGS
------
-  --in   check you in 
-  --out  check you out 
-
-NOTE
-----
-  If no flags are provided you will be prompted with the 
-  opposite action of the status. 
-
-  eg:
-	If you are already checked in , it'll ask you if you want to check out
-	If you are already checked out , it'll ask you if you want to check in
-	
-	`)
-}
-
 async function cli() {
-	const argv = process.argv.slice(2)
+	program.name('kekacheck').version('1.0.0')
+
+	program
+		.option('--in', 'trigger a check in into keka')
+		.option('--out', 'trigger a checkout on into keka')
+		.option('--config [path]', 'path to .env containing creds')
+		.description(
+			`If no flags are provided you will be prompted with the 
+opposite action of the status. 
+
+eg:
+	If you are already checked in , it'll ask you if you want to check out
+	If you are already checked out , it'll ask you if you want to check in`,
+		)
+		.parse()
+
+	const {in: forceIn, out: forceOut, config: configPath} = program.opts()
+
+	dotenv.config({
+		path: configPath || '.env',
+	})
+
+	spinner.start()
 	spinner.text = 'Processing...'
-	const flags = mri(argv)
-	if (flags.help || flags.h) {
-		spinner.stop()
-		return printHelp()
-	}
+
 	const browser = await setupBrowser()
 	spinner.text = 'Browser up...'
 	await goBonkers(browser, {
-		forceCheckIn: flags.in,
-		forceCheckOut: flags.out,
+		forceCheckIn: forceIn,
+		forceCheckOut: forceOut,
 	})
 	browser.close()
 }

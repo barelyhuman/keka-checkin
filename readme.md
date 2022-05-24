@@ -22,10 +22,12 @@ cp .env.template .env
 ./cli.js --out
 ```
 
-To make it easier, set an alias into your bash/zsh for the same
+To make it easier, set an alias into your bash/zsh for the same.
+You will have to add a path to the .env file when setting an alias since the process is no
+longer in the same directory
 
 ```sh
-alias kekacheck="path/to/this/repo/cli.js"
+alias kekacheck="path/to/this/repo/cli.js --config /path/to/.env/file"
 ```
 
 and then use it as so
