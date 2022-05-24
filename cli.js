@@ -19,6 +19,15 @@ const urls = {
 	google: 'https://accounts.google.com/',
 }
 
+function validateEnvironment() {
+	const requiredVars = ['GOOGLE_EMAIL', 'GOOGLE_PASSWORD']
+	requiredVars.forEach(item => {
+		if (!process.env[item]) {
+			throw new Error(`Missing Environment Variable: ${item}`)
+		}
+	})
+}
+
 async function logIntoGoogle(browser) {
 	const page = await browser.newPage()
 	await setUserAgent(page)
@@ -190,38 +199,45 @@ async function goBonkers(browser, opts) {
 }
 
 async function cli() {
-	program.name('kekacheck').version('1.0.0')
+	try {
+		program.name('kekacheck').version('1.0.0')
 
-	program
-		.option('--in', 'trigger a check in into keka')
-		.option('--out', 'trigger a checkout on into keka')
-		.option('--config [path]', 'path to .env containing creds')
-		.description(
-			`If no flags are provided you will be prompted with the 
-opposite action of the status. 
+		program
+			.option('--in', 'trigger a check in into keka')
+			.option('--out', 'trigger a checkout on into keka')
+			.option('--config [path]', 'path to .env containing creds')
+			.description(
+				`If no flags are provided you will be prompted with the 
+	opposite action of the status. 
+	
+	eg:
+		If you are already checked in , it'll ask you if you want to check out
+		If you are already checked out , it'll ask you if you want to check in`,
+			)
+			.parse()
 
-eg:
-	If you are already checked in , it'll ask you if you want to check out
-	If you are already checked out , it'll ask you if you want to check in`,
-		)
-		.parse()
+		const {in: forceIn, out: forceOut, config: configPath} = program.opts()
 
-	const {in: forceIn, out: forceOut, config: configPath} = program.opts()
+		dotenv.config({
+			path: configPath || '.env',
+		})
 
-	dotenv.config({
-		path: configPath || '.env',
-	})
+		spinner.start()
+		spinner.text = 'Processing...'
 
-	spinner.start()
-	spinner.text = 'Processing...'
+		validateEnvironment()
 
-	const browser = await setupBrowser()
-	spinner.text = 'Browser up...'
-	await goBonkers(browser, {
-		forceCheckIn: forceIn,
-		forceCheckOut: forceOut,
-	})
-	browser.close()
+		const browser = await setupBrowser()
+		spinner.text = 'Browser up...'
+		await goBonkers(browser, {
+			forceCheckIn: forceIn,
+			forceCheckOut: forceOut,
+		})
+		browser.close()
+	} catch (err) {
+		if (spinner.isSpinning) return spinner.fail(err.message)
+		console.error(err.message)
+	}
 }
 
 cli()
