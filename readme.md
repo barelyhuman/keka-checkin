@@ -16,18 +16,17 @@ yarn
 # setup .env file
 cp .env.template .env
 
-# fill in the env file and then
+# log into your keka account 
+./cli.js --login
+
+# once the above is completed you can use the below 
 ./cli.js --in
 # or
 ./cli.js --out
 ```
 
-To make it easier, set an alias into your bash/zsh for the same.
-You will have to add a path to the .env file when setting an alias since the process is no
-longer in the same directory
-
 ```sh
-alias kekacheck="path/to/this/repo/cli.js --config /path/to/.env/file"
+alias kekacheck="path/to/this/repo/cli.js"
 ```
 
 and then use it as so
@@ -37,10 +36,6 @@ kekacheck --in
 # or
 kekacheck --out
 ```
-
-## Caveats
-
-- Doesn't support google's device based confirmation flow yet.
 
 ## License
 
