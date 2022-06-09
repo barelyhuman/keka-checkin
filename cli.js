@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 import { program } from 'commander'
 
 // eslint-disable-next-line
-import ora from "ora";
+import ora from 'ora'
 
 import prompts from 'prompts'
 import puppeteer from 'puppeteer'
@@ -16,28 +16,28 @@ const spinner = ora('Starting engines...')
 // cli context
 const ctx = {
   showLogin: false,
-  kekaPage: null
+  kekaPage: null,
 }
 
 const BUTTON_STATUS_MAP = {
   CHECKED_IN: 'clock-out',
-  CHECKED_OUT: 'web check-in'
+  CHECKED_OUT: 'web check-in',
 }
 
 const urls = {
   keka: 'https://fountane.keka.com',
-  google: 'https://accounts.google.com/'
+  google: 'https://accounts.google.com/',
 }
 
-function validateEnvironment () {
-  const requiredVars = ['GOOGLE_EMAIL', 'GOOGLE_PASSWORD']
-  requiredVars.forEach((item) => {
+function validateEnvironment() {
+  const requiredVars = []
+  requiredVars.forEach(item => {
     if (!process.env[item])
       throw new Error(`Missing Environment Variable: ${item}`)
   })
 }
 
-async function logIntoKeka (browser) {
+async function logIntoKeka(browser) {
   const page = await browser.newPage()
   await setUserAgent(page)
   const navigationPromise = page.waitForNavigation()
@@ -56,7 +56,7 @@ async function logIntoKeka (browser) {
   return page
 }
 
-async function getKekaClockInStatus (page) {
+async function getKekaClockInStatus(page) {
   await page.waitForSelector('home-attendance-clockin-widget button')
   await page.waitForTimeout(0)
   const status = await page.evaluate(() => {
@@ -72,7 +72,7 @@ async function getKekaClockInStatus (page) {
     : BUTTON_STATUS_MAP.CHECKED_OUT
 }
 
-async function checkOut (page) {
+async function checkOut(page) {
   try {
     await page.click('home-attendance-clockin-widget button')
     await page.click('home-attendance-clockin-widget button.btn-danger')
@@ -86,7 +86,7 @@ async function checkOut (page) {
   }
 }
 
-async function checkIn (page) {
+async function checkIn(page) {
   try {
     await page.click('home-attendance-clockin-widget button')
     await page.click(
@@ -101,14 +101,14 @@ async function checkIn (page) {
   }
 }
 
-async function confirmUserAction (status, page) {
+async function confirmUserAction(status, page) {
   if (status === BUTTON_STATUS_MAP.CHECKED_IN) {
     spinner.stop()
     const response = await prompts({
       type: 'confirm',
       name: 'value',
-      message: 'You\'re checked in, do you want to check out?',
-      initial: false
+      message: "You're checked in, do you want to check out?",
+      initial: false,
     })
     spinner.start()
     if (!response.value) return
@@ -118,8 +118,8 @@ async function confirmUserAction (status, page) {
     const response = await prompts({
       type: 'confirm',
       name: 'value',
-      message: 'You aren\'t checked in, do you want to?',
-      initial: false
+      message: "You aren't checked in, do you want to?",
+      initial: false,
     })
     spinner.start()
     if (!response.value) return
@@ -129,30 +129,30 @@ async function confirmUserAction (status, page) {
   await page.waitForTimeout(5000)
 }
 
-async function setUserAgent (page) {
+async function setUserAgent(page) {
   await page.setUserAgent(
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'
   )
 }
 
-async function setupBrowser () {
+async function setupBrowser() {
   const browser = await puppeteer.launch({
     headless: !ctx.showLogin,
-    userDataDir: './session'
+    userDataDir: './session',
   })
   const context = browser.defaultBrowserContext()
   await context.overridePermissions(urls.keka, ['geolocation'])
   return browser
 }
 
-async function goBonkers (browser, opts) {
+async function goBonkers(browser, opts) {
   spinner.text = 'Getting keka status...'
   const { kekaPage } = ctx
   const status = await getKekaClockInStatus(kekaPage)
 
   if (opts.forceCheckIn || opts.forceCheckOut) {
     if (status === BUTTON_STATUS_MAP.CHECKED_IN && opts.forceCheckIn) {
-      spinner.info('You\'re already checked in')
+      spinner.info("You're already checked in")
       return
     }
     if (status === BUTTON_STATUS_MAP.CHECKED_OUT && opts.forceCheckOut) {
@@ -169,7 +169,7 @@ async function goBonkers (browser, opts) {
   await kekaPage.waitForTimeout(3000)
 }
 
-async function cli () {
+async function cli() {
   try {
     program.name('kekacheck').version('1.0.0')
 
@@ -192,11 +192,11 @@ async function cli () {
       in: forceIn,
       out: forceOut,
       config: configPath,
-      login
+      login,
     } = program.opts()
 
     dotenv.config({
-      path: configPath || '.env'
+      path: configPath || '.env',
     })
 
     spinner.start()
@@ -221,7 +221,7 @@ async function cli () {
     ctx.kekaPage = await logIntoKeka(browser)
     await goBonkers(browser, {
       forceCheckIn: forceIn,
-      forceCheckOut: forceOut
+      forceCheckOut: forceOut,
     })
     browser.close()
     process.exit(0)
