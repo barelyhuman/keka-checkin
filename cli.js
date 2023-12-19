@@ -55,9 +55,10 @@ async function logIntoKeka(browser) {
   await navigationPromise
 
   if (ctx.showLogin) {
-    await page.waitForSelector('.btn-google-login')
+    const loginButtonSelector = "body > div > div.login-content.d-flex.flex-column.justify-content-between.overflow-auto.bg-primary > div:nth-child(1) > div:nth-child(2) > div > div:nth-child(1) > button"
+    await page.waitForSelector(loginButtonSelector)
     await page.waitForTimeout(500)
-    await page.click('.btn-google-login')
+    await page.click(loginButtonSelector)
     await navigationPromise
   }
 
